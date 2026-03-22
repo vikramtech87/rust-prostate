@@ -1,0 +1,5 @@
+[workspace]
+members = [
+  "prostate-core",
+  "prostate-cli"
+  ]
