@@ -6,7 +6,7 @@ pub enum CoreExprError {
   MissingTumorPercent,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct CoreExpr {
   pub p3: u8,
   pub p4: u8,
@@ -56,7 +56,7 @@ impl CoreExpr {
   }
 }
 
-pub fn parse(input: &str) -> Result<CoreExpr, CoreExprError> {
+pub fn parse_core_expr(input: &str) -> Result<CoreExpr, CoreExprError> {
   // Parse empty
   if input.is_empty() {
     return Err(CoreExprError::EmptyInput);
@@ -138,14 +138,14 @@ mod tests {
 
   #[test]
   fn empty_input_should_error() {
-    let result = parse("");
+    let result = parse_core_expr("");
 
     assert_eq!(result.unwrap_err(), CoreExprError::EmptyInput);
   }
 
   #[test]
   fn benign_core() {
-    let result = parse("0").unwrap();
+    let result = parse_core_expr("0").unwrap();
 
     assert_eq!(result, CoreExpr::benign());
   }
@@ -158,7 +158,7 @@ mod tests {
     ];
 
     for case in cases {
-      let result = parse(case).unwrap_err();
+      let result = parse_core_expr(case).unwrap_err();
       assert_eq!(result, CoreExprError::MissingTumorPercent);
     }
   }
@@ -171,7 +171,7 @@ mod tests {
     ];
 
     for case in cases {
-      let result = parse(case).unwrap_err();
+      let result = parse_core_expr(case).unwrap_err();
       assert_eq!(result, CoreExprError::InvalidTumorPercent);
     }
   }
@@ -187,7 +187,7 @@ mod tests {
     ];
 
     for case in cases {
-      let result = parse(case).unwrap_err();
+      let result = parse_core_expr(case).unwrap_err();
       assert_eq!(result, CoreExprError::InvalidPattern)
     }
   }
@@ -210,7 +210,7 @@ mod tests {
     ];
 
     for case in cases {
-      let result = parse(case.input).unwrap();
+      let result = parse_core_expr(case.input).unwrap();
       assert_eq!(result, case.expected, "failed for input {}", case.input);
     }
   }
@@ -245,7 +245,7 @@ mod tests {
     ];
 
     for case in cases {
-      let result = parse(case.input).unwrap();
+      let result = parse_core_expr(case.input).unwrap();
       assert_eq!(result, case.expected);
     }
   }
@@ -258,7 +258,7 @@ mod tests {
     ];
 
     for case in cases {
-      let result = parse(case).unwrap_err();
+      let result = parse_core_expr(case).unwrap_err();
       assert_eq!(result, CoreExprError::InvalidPattern);
     }
   }
@@ -266,7 +266,7 @@ mod tests {
   #[test]
   fn tertiary_pattern_case()
   {
-    let result = parse("10,40,50/60").unwrap();
+    let result = parse_core_expr("10,40,50/60").unwrap();
     assert_eq!(
       result,
       CoreExpr { p3: 10, p4: 40, p5: 50, tumor_pct: 60 },
