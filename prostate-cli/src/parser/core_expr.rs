@@ -24,13 +24,15 @@ impl CoreExpr {
     }
   }
 
-  pub fn from_single(pattern: u8, tumor_pct: u8) -> Self {
-    match pattern {
-      3 => Self { p3: 100, p4: 0, p5: 0, tumor_pct },
-      4 => Self { p3: 0, p4: 100, p5: 0, tumor_pct },
-      5 => Self { p3: 0, p4: 0, p5: 100, tumor_pct },
-      _ => unreachable!(),
-    }
+  pub fn from_single(pattern: u8, tumor_pct: u8) -> Result<Self, CoreExprError> {
+    let (p3, p4, p5): (u8, u8, u8) = match pattern {
+      3 => (100, 0, 0),
+      4 => (0, 100, 0),
+      5 => (0, 0, 100),
+      _ => return Err(CoreExprError::InvalidPattern),
+    };
+
+    Ok(Self { p3, p4, p5, tumor_pct})
   }
 
   pub fn from_primary_secondary(primary: u8, secondary: u8, secondary_pct: u8, tumor_pct: u8) -> Result<Self, CoreExprError> {
@@ -122,10 +124,7 @@ pub fn parse(input: &str) -> Result<CoreExpr, CoreExprError> {
   .parse()
   .map_err(|_| CoreExprError::InvalidPattern)?;
 
-  match pattern {
-    3..=5 => Ok(CoreExpr::from_single(pattern, tumor_pct)),
-    _ => Err(CoreExprError::InvalidPattern)
-  }
+  CoreExpr::from_single(pattern, tumor_pct)
 }
 
 #[cfg(test)]
@@ -136,11 +135,6 @@ mod tests {
     input: &'a str,
     expected: CoreExpr,
   }
-
-  // struct InvalidCase<'a> {
-  //   input: &'a str,
-  //   expected: CoreExprError,
-  // }
 
   #[test]
   fn empty_input_should_error() {
@@ -203,15 +197,15 @@ mod tests {
     let cases = [
       ValidCase {
         input: "3/20",
-        expected: CoreExpr::from_single(3, 20),
+        expected: CoreExpr { p3: 100, p4: 0, p5: 0, tumor_pct: 20 },
       },
       ValidCase {
         input: "4/50",
-        expected: CoreExpr::from_single(4, 50),
+        expected: CoreExpr { p3: 0, p4: 100, p5: 0, tumor_pct: 50 },
       },
       ValidCase {
         input: "5/80",
-        expected: CoreExpr::from_single(5, 80),
+        expected: CoreExpr { p3: 0, p4: 0, p5: 100, tumor_pct: 80 },
       }
     ];
 

@@ -54,7 +54,6 @@ mod tests {
 
     #[test]
     fn biopsy_gleason_score_cases() {
-
         let cases = vec![
             Case { p3:100, p4:0,   p5:0,  primary:Pattern::Three, secondary:Pattern::Three },
             Case { p3:90,  p4:10,  p5:0,  primary:Pattern::Three, secondary:Pattern::Four },
