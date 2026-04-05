@@ -17,7 +17,7 @@ pub enum ParseCoreInfoError {
     DuplicateToken,
 }
 
-pub fn parse_report(s: &str) -> Result<CoreInfo, ParseCoreInfoError> {
+pub fn parse_core(s: &str) -> Result<CoreInfo, ParseCoreInfoError> {
     let tokens: Vec<&str> = s.split_whitespace().collect();
 
     if tokens.is_empty() {
@@ -151,7 +151,7 @@ mod tests {
         ];
 
         for case in cases {
-            let result = parse_report(case.input).unwrap();
+            let result = parse_core(case.input).unwrap();
             assert_eq!(result.core.p3, case.p3);
             assert_eq!(result.core.p4, case.p4);
             assert_eq!(result.core.p5, case.p5);
@@ -164,7 +164,7 @@ mod tests {
     #[test]
     fn reject_empty_input() {
         assert_eq!(
-            parse_report("").unwrap_err(),
+            parse_core("").unwrap_err(),
             ParseCoreInfoError::EmptyInput
         );
     }
@@ -172,7 +172,7 @@ mod tests {
     #[test]
     fn reject_excess_tokens() {
         assert_eq!(
-            parse_report("5/20 p,c x4 x3").unwrap_err(),
+            parse_core("5/20 p,c x4 x3").unwrap_err(),
             ParseCoreInfoError::ExcessTokens
         );
     }
@@ -180,11 +180,11 @@ mod tests {
     #[test]
     fn reject_repeat_tokens() {
         assert_eq!(
-            parse_report("4/30 p,c l,s").unwrap_err(),
+            parse_core("4/30 p,c l,s").unwrap_err(),
             ParseCoreInfoError::DuplicateToken
         );
         assert_eq!(
-            parse_report("3/90 x2 x3").unwrap_err(),
+            parse_core("3/90 x2 x3").unwrap_err(),
             ParseCoreInfoError::DuplicateToken
         );
     }

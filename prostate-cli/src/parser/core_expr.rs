@@ -56,6 +56,47 @@ impl CoreExpr {
   }
 }
 
+fn parse_triple_patterns(s: &str, tumor_pct: u8) -> Result<CoreExpr, CoreExprError> {
+  let parts: Vec<&str> = s
+      .split(',')
+      .collect();
+
+  if parts.len() != 3 {
+    return Err(CoreExprError::InvalidPattern);
+  }
+
+  let p3: u8 = parts[0].parse().map_err(|_| CoreExprError::InvalidPattern)?;
+  let p4: u8 = parts[1].parse().map_err(|_| CoreExprError::InvalidPattern)?;
+  let p5: u8 = parts[2].parse().map_err(|_| CoreExprError::InvalidPattern)?;
+
+  return Ok(CoreExpr { p3, p4, p5, tumor_pct });
+}
+
+fn parse_primary_secondary(s: &str, tumor_pct: u8) -> Result<CoreExpr, CoreExprError> {
+  let (primary_str, rest_str) = s
+      .split_once('+')
+      .ok_or(CoreExprError::InvalidPattern)?;
+
+  let primary: u8 = primary_str
+      .parse()
+      .map_err(|_| CoreExprError::InvalidPattern)?;
+
+  let (secondary_str, secondary_pct_str) = rest_str
+      .split_once('[')
+      .ok_or(CoreExprError::InvalidPattern)?;
+
+  let secondary: u8 = secondary_str
+      .parse()
+      .map_err(|_| CoreExprError::InvalidPattern)?;
+
+  let secondary_pct: u8 = secondary_pct_str
+      .trim_end_matches(']')
+      .parse()
+      .map_err(|_| CoreExprError::InvalidPattern)?;
+
+  return CoreExpr::from_primary_secondary(primary, secondary, secondary_pct, tumor_pct);
+}
+
 pub fn parse_core_expr(input: &str) -> Result<CoreExpr, CoreExprError> {
   // Parse empty
   if input.is_empty() {
@@ -78,51 +119,18 @@ pub fn parse_core_expr(input: &str) -> Result<CoreExpr, CoreExprError> {
 
   // Parse explicit patterns. e.g. 10,20,70/60
   if pattern_str.contains(',') {
-    let parts: Vec<&str> = pattern_str
-      .split(',')
-      .collect();
-    
-    if parts.len() != 3 {
-      return Err(CoreExprError::InvalidPattern);
-    }
-
-    let p3: u8 = parts[0].parse().map_err(|_| CoreExprError::InvalidPattern)?;
-    let p4: u8 = parts[1].parse().map_err(|_| CoreExprError::InvalidPattern)?;
-    let p5: u8 = parts[2].parse().map_err(|_| CoreExprError::InvalidPattern)?;
-
-    return Ok(CoreExpr { p3, p4, p5, tumor_pct });
+    return parse_triple_patterns(pattern_str, tumor_pct);
   }
 
   // Parse cases with primary and secondary patterns. e.g. 3+4[30]/60
   if pattern_str.contains("+") {
-    let (primary_str, rest_str) = pattern_str
-      .split_once('+')
-      .ok_or(CoreExprError::InvalidPattern)?;
-
-    let primary: u8 = primary_str
-      .parse()
-      .map_err(|_| CoreExprError::InvalidPattern)?;
-
-    let (secondary_str, secondary_pct_str) = rest_str
-      .split_once('[')
-      .ok_or(CoreExprError::InvalidPattern)?;
-
-    let secondary: u8 = secondary_str
-      .parse()
-      .map_err(|_| CoreExprError::InvalidPattern)?;
-
-    let secondary_pct: u8 = secondary_pct_str
-      .trim_end_matches(']')
-      .parse()
-      .map_err(|_| CoreExprError::InvalidPattern)?;
-
-    return CoreExpr::from_primary_secondary(primary, secondary, secondary_pct, tumor_pct);
+    return parse_primary_secondary(pattern_str, tumor_pct);
   } 
   
   // Parse only one pattern. e.g. 3/60
   let pattern: u8 = pattern_str
-  .parse()
-  .map_err(|_| CoreExprError::InvalidPattern)?;
+    .parse()
+    .map_err(|_| CoreExprError::InvalidPattern)?;
 
   CoreExpr::from_single(pattern, tumor_pct)
 }
